@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Daisy Chat</title>
+    <style>
+        body {
+            background-color: #121212;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        h1 {
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+        }
+        /* Style for user and Daisy messages */
+        .message-container {
+            max-width: 60%;
+            margin: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            word-wrap: break-word;
+        }
+
+        /* Scrollable chat area */
+        .chat-area {
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 10px;
+            width: 100%;
+        }
+
+        #user-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        #send-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Daisy Chat</h1>
+    <div id="chat-container">
+        <div class="chat-area" id="output-console"></div>
+        <textarea id="user-input" rows="4" cols="50"></textarea>
+        <button id="send-button">Send</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        socket.on('connect', function() {
+            console.log('Connected to server.');
+        });
+
+        socket.on('output', function(data) {
+            var outputConsole = document.getElementById('output-console');
+            // Display DAISY's output as 'DAISY: ...'
+            if (data.data.trim() !== '') {
+                var daisyMessage = document.createElement('div');
+                daisyMessage.classList.add('message-container'); // Add the message-container class
+                daisyMessage.textContent = 'DAISY: ' + data.data;
+                outputConsole.appendChild(daisyMessage);
+            }
+            // Scroll to the bottom of the chat area
+            outputConsole.scrollTop = outputConsole.scrollHeight;
+        });
+
+        document.getElementById('send-button').addEventListener('click', function() {
+            var userInput = document.getElementById('user-input').value;
+            // Display the user's input as 'USER: ...'
+            var outputConsole = document.getElementById('output-console');
+            var userMessage = document.createElement('div');
+            userMessage.classList.add('message-container'); // Add the message-container class
+            userMessage.textContent = 'USER: ' + userInput;
+            outputConsole.appendChild(userMessage);
+            // Scroll to the bottom of the chat area
+            outputConsole.scrollTop = outputConsole.scrollHeight;
+
+            socket.emit('user_input', { input_text: userInput });
+            document.getElementById('user-input').value = '';
+        });
+    </script>
+</body>
+</html>
